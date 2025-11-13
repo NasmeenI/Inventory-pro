@@ -1,11 +1,5 @@
 // API configuration and utilities
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1"
-
-// Debug: Log the API URL
-if (typeof window !== 'undefined') {
-  console.log('API_BASE_URL:', API_BASE_URL)
-  console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
 
 export class ApiError extends Error {
   constructor(
