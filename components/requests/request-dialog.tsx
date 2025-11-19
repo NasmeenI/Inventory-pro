@@ -34,7 +34,6 @@ interface Request {
   transactionType: "stockIn" | "stockOut"
   itemAmount: number
   product_id: string
-  status: "pending" | "approved" | "rejected"
 }
 
 interface RequestDialogProps {
@@ -64,11 +63,13 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
 
   useEffect(() => {
     if (request) {
+      const dateStr = typeof request.transactionDate === "string" ? request.transactionDate : new Date(request.transactionDate).toISOString()
+      const productId = typeof request.product_id === "string" ? request.product_id : (request as any).product_id?._id || ""
       setFormData({
-        transactionDate: request.transactionDate.split("T")[0],
+        transactionDate: dateStr.includes("T") ? dateStr.split("T")[0] : dateStr,
         transactionType: request.transactionType,
         itemAmount: request.itemAmount,
-        product_id: request.product_id,
+        product_id: productId,
       })
     } else {
       setFormData({
@@ -98,6 +99,15 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!token) return
+
+    if (!formData.product_id) {
+      toast({
+        title: "Error",
+        description: "Please select a product",
+        variant: "destructive",
+      })
+      return
+    }
 
     // Validation for stockOut requests
     if (formData.transactionType === "stockOut") {
@@ -246,7 +256,7 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !formData.product_id}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {request ? "Update Request" : "Create Request"}
             </Button>

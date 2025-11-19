@@ -76,18 +76,22 @@ export default function ProductsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Products</h1>
-            <p className="text-muted-foreground">Manage your inventory products and stock levels</p>
-          </div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 p-8 text-white shadow-xl">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Products</h1>
+              <p className="text-blue-50 text-lg">Manage your inventory products and stock levels</p>
+            </div>
 
-          {user?.role === "admin" && (
-            <Button onClick={handleAddProduct}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Product
-            </Button>
-          )}
+            {user?.role === "admin" && (
+              <Button onClick={handleAddProduct} className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg font-semibold">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Product
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -97,7 +101,7 @@ export default function ProductsPage() {
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-11 border-2 focus:border-blue-500"
             />
           </div>
         </div>

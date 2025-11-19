@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoreHorizontal, Edit, Trash2, FileText, Check, X } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
+import { api } from "@/lib/api"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1"
 
 interface Request {
   _id: string
@@ -21,7 +21,6 @@ interface Request {
   product_id: string
   productName?: string
   productSku?: string
-  status: "pending" | "approved" | "rejected"
   createdBy?: string
   createdAt: string
 }
@@ -34,31 +33,19 @@ interface RequestsTableProps {
 }
 
 export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }: RequestsTableProps) {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const { toast } = useToast()
   const [actioningId, setActioningId] = useState<string | null>(null)
 
   const handleDelete = async (requestId: string) => {
-    if (!token) return
-
     setActioningId(requestId)
     try {
-      const response = await fetch(`${API_BASE_URL}/requests/${requestId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await api.requests.delete(requestId)
+      toast({
+        title: "Success",
+        description: "Request deleted successfully",
       })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Request deleted successfully",
-        })
-        onRefresh()
-      } else {
-        throw new Error("Failed to delete request")
-      }
+      onRefresh()
     } catch (error) {
       toast({
         title: "Error",
@@ -70,41 +57,10 @@ export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }:
     }
   }
 
-  const handleStatusUpdate = async (requestId: string, status: "approved" | "rejected") => {
-    if (!token) return
+  // Status updates (approve/reject) are omitted because backend schema may not have status
 
-    setActioningId(requestId)
-    try {
-      const response = await fetch(`${API_BASE_URL}/requests/${requestId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: `Request ${status} successfully`,
-        })
-        onRefresh()
-      } else {
-        throw new Error(`Failed to ${status} request`)
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${status} request`,
-        variant: "destructive",
-      })
-    } finally {
-      setActioningId(null)
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status?: string) => {
+    if (!status) return <Badge variant="secondary">-</Badge>
     switch (status) {
       case "pending":
         return <Badge variant="secondary">Pending</Badge>
@@ -163,7 +119,6 @@ export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }:
               <TableHead>Type</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Transaction Date</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -181,46 +136,48 @@ export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }:
                 <TableCell>{getTypeBadge(request.transactionType)}</TableCell>
                 <TableCell className="font-medium">{request.itemAmount}</TableCell>
                 <TableCell>{format(new Date(request.transactionDate), "MMM dd, yyyy")}</TableCell>
-                <TableCell>{getStatusBadge(request.status)}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {format(new Date(request.createdAt), "MMM dd, yyyy")}
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" disabled={actioningId === request._id}>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {(user?.role === "admin" || request.createdBy === user?._id) && request.status === "pending" && (
-                        <DropdownMenuItem onClick={() => onEditRequest(request)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                      )}
+                  {(() => {
+                    const isAdmin = user?.role === "admin"
+                    const isOwner = request.createdBy === user?._id
+                    const canEdit = isAdmin || isOwner
+                    const canDelete = isAdmin || isOwner
 
-                      {user?.role === "admin" && request.status === "pending" && (
-                        <>
-                          <DropdownMenuItem onClick={() => handleStatusUpdate(request._id, "approved")}>
-                            <Check className="mr-2 h-4 w-4" />
-                            Approve
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleStatusUpdate(request._id, "rejected")}>
-                            <X className="mr-2 h-4 w-4" />
-                            Reject
-                          </DropdownMenuItem>
-                        </>
-                      )}
+                    if (!canEdit && !canDelete) {
+                      return (
+                        <div className="flex items-center">
+                          <Button variant="ghost" size="sm" disabled>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )
+                    }
 
-                      {(user?.role === "admin" || request.createdBy === user?._id) && (
-                        <DropdownMenuItem onClick={() => handleDelete(request._id)} className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    return (
+                      <div className="flex items-center gap-2">
+                        {canEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEditRequest(request)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(request._id)}
+                            disabled={actioningId === request._id}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </TableCell>
               </TableRow>
             ))}
@@ -244,24 +201,11 @@ export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }:
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {(user?.role === "admin" || request.createdBy === user?._id) && request.status === "pending" && (
+                    {(user?.role === "admin" || request.createdBy === user?._id) && (
                       <DropdownMenuItem onClick={() => onEditRequest(request)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
-                    )}
-
-                    {user?.role === "admin" && request.status === "pending" && (
-                      <>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(request._id, "approved")}>
-                          <Check className="mr-2 h-4 w-4" />
-                          Approve
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(request._id, "rejected")}>
-                          <X className="mr-2 h-4 w-4" />
-                          Reject
-                        </DropdownMenuItem>
-                      </>
                     )}
 
                     {(user?.role === "admin" || request.createdBy === user?._id) && (
@@ -277,7 +221,6 @@ export function RequestsTable({ requests, onEditRequest, onRefresh, isLoading }:
             <CardContent className="pt-0">
               <div className="flex flex-wrap gap-2 mb-3">
                 {getTypeBadge(request.transactionType)}
-                {getStatusBadge(request.status)}
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>

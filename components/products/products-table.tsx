@@ -9,8 +9,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MoreHorizontal, Edit, Trash2, Package } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { api } from "@/lib/api"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1"
 
 interface Product {
   _id: string
@@ -33,31 +33,19 @@ interface ProductsTableProps {
 }
 
 export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }: ProductsTableProps) {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const { toast } = useToast()
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleDelete = async (productId: string) => {
-    if (!token) return
-
     setDeletingId(productId)
     try {
-      const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await api.products.delete(productId)
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
       })
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Product deleted successfully",
-        })
-        onRefresh()
-      } else {
-        throw new Error("Failed to delete product")
-      }
+      onRefresh()
     } catch (error) {
       toast({
         title: "Error",
@@ -143,31 +131,27 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
                     <Badge variant={stockStatus.variant}>{stockStatus.label}</Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
+                    {user?.role === "admin" ? (
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => onEditProduct(product)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {user?.role === "admin" && (
-                          <>
-                            <DropdownMenuItem onClick={() => onEditProduct(product)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(product._id)}
-                              disabled={deletingId === product._id}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(product._id)}
+                          disabled={deletingId === product._id}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button variant="ghost" size="sm" disabled>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               )
