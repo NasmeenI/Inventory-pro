@@ -41,9 +41,11 @@ interface RequestDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSaved: () => void
+  initialProductId?: string
+  initialTransactionType?: "stockIn" | "stockOut"
 }
 
-export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestDialogProps) {
+export function RequestDialog({ request, open, onOpenChange, onSaved, initialProductId, initialTransactionType }: RequestDialogProps) {
   const { token } = useAuth()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
@@ -75,12 +77,12 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
     } else {
       setFormData({
         transactionDate: new Date().toISOString().split("T")[0],
-        transactionType: "stockIn",
+        transactionType: initialTransactionType || "stockIn",
         itemAmount: 1,
-        product_id: "",
+        product_id: initialProductId || "",
       })
     }
-  }, [request])
+  }, [request, initialProductId, initialTransactionType])
 
   const fetchProducts = async () => {
     try {

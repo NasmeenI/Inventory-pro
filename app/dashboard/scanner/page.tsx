@@ -173,50 +173,6 @@ export default function WarehouseScanner() {
           </Card>
         </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <ScanLine className="h-6 w-6 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{recentScans.length}</p>
-                  <p className="text-sm text-muted-foreground">Scans Today</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <ArrowDownToLine className="h-6 w-6 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">Fast</p>
-                  <p className="text-sm text-muted-foreground">Stock In Process</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                  <ArrowUpFromLine className="h-6 w-6 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">Quick</p>
-                  <p className="text-sm text-muted-foreground">Stock Out Process</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       <QRScanner
@@ -230,6 +186,8 @@ export default function WarehouseScanner() {
           request={null}
           open={showRequestDialog}
           onOpenChange={setShowRequestDialog}
+          initialProductId={selectedProduct.id}
+          initialTransactionType={transactionType}
           onSaved={() => {
             setShowRequestDialog(false)
             // Optional: Clear selected product after creating request
