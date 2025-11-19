@@ -12,7 +12,7 @@ interface Request {
   product_id: string
   productName?: string
   productSku?: string
-  status: "pending" | "approved" | "rejected"
+  status?: "pending" | "approved" | "rejected"
   createdBy?: string
   createdAt: string
 }
