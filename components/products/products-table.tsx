@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MoreHorizontal, Edit, Trash2, Package } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Package, QrCode } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { api } from "@/lib/api"
+import { QRCodeGenerator } from "@/components/qr/qr-code-generator"
 
 
 interface Product {
@@ -36,6 +37,7 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
   const { user } = useAuth()
   const { toast } = useToast()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [qrProduct, setQrProduct] = useState<Product | null>(null)
 
   const handleDelete = async (productId: string) => {
     setDeletingId(productId)
@@ -133,6 +135,10 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
                   <TableCell>
                     {user?.role === "admin" ? (
                       <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setQrProduct(product)}>
+                          <QrCode className="mr-2 h-4 w-4" />
+                          QR
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => onEditProduct(product)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
@@ -148,8 +154,9 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
                         </Button>
                       </div>
                     ) : (
-                      <Button variant="ghost" size="sm" disabled>
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button variant="outline" size="sm" onClick={() => setQrProduct(product)}>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        QR Code
                       </Button>
                     )}
                   </TableCell>
@@ -184,6 +191,10 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setQrProduct(product)}>
+                          <QrCode className="mr-2 h-4 w-4" />
+                          QR Code
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onEditProduct(product)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
@@ -230,6 +241,16 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
           )
         })}
       </div>
+
+      {qrProduct && (
+        <QRCodeGenerator
+          productId={qrProduct._id}
+          productName={qrProduct.name}
+          sku={qrProduct.sku}
+          open={!!qrProduct}
+          onOpenChange={(open) => !open && setQrProduct(null)}
+        />
+      )}
     </>
   )
 }

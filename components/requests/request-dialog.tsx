@@ -1,8 +1,7 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
+import type React from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { Loader2, ScanLine } from "lucide-react"
+import { QRScanner } from "@/components/qr/qr-scanner"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api/v1"
 
@@ -48,6 +48,7 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
+  const [showScanner, setShowScanner] = useState(false)
   const [formData, setFormData] = useState({
     transactionDate: new Date().toISOString().split("T")[0],
     transactionType: "stockIn" as "stockIn" | "stockOut",
@@ -86,7 +87,6 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
       const response = await fetch(`${API_BASE_URL}/products`)
       if (response.ok) {
         const data = await response.json()
-        // Handle both direct array and { data: [] } response formats
         setProducts(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
@@ -95,6 +95,14 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
   }
 
   const selectedProduct = products.find((p) => p._id === formData.product_id)
+
+  const handleScanSuccess = (productData: { id: string; sku: string; name: string }) => {
+    setFormData({ ...formData, product_id: productData.id })
+    toast({
+      title: "Product Scanned",
+      description: `${productData.name} selected`,
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -109,7 +117,6 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
       return
     }
 
-    // Validation for stockOut requests
     if (formData.transactionType === "stockOut") {
       if (!selectedProduct) {
         toast({
@@ -186,7 +193,19 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="product">Product</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="product">Product</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowScanner(true)}
+                className="h-8"
+              >
+                <ScanLine className="mr-2 h-4 w-4" />
+                Scan QR
+              </Button>
+            </div>
             <Select
               value={formData.product_id}
               onValueChange={(value) => setFormData({ ...formData, product_id: value })}
@@ -263,6 +282,8 @@ export function RequestDialog({ request, open, onOpenChange, onSaved }: RequestD
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <QRScanner open={showScanner} onOpenChange={setShowScanner} onScanSuccess={handleScanSuccess} />
     </Dialog>
   )
 }

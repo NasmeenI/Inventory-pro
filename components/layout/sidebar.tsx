@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Package, FileText, Users, Settings, LogOut, X } from "lucide-react"
+import { LayoutDashboard, Package, FileText, Users, Settings, LogOut, X, ScanLine } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -11,6 +11,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "staff"] },
   { name: "Products", href: "/dashboard/products", icon: Package, roles: ["admin", "staff"] },
   { name: "Requests", href: "/dashboard/requests", icon: FileText, roles: ["admin", "staff"] },
+  { name: "Warehouse Scanner", href: "/dashboard/scanner", icon: ScanLine, roles: ["admin", "staff"] },
   { name: "Users", href: "/dashboard/users", icon: Users, roles: ["admin"] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["admin", "staff"] },
 ]
