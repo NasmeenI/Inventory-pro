@@ -74,7 +74,7 @@ export function ProductsOverview() {
 
   return (
     <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
+      <CardHeader>
         <CardTitle className="text-xl">Recent Products</CardTitle>
         <CardDescription>Latest inventory items and their stock status</CardDescription>
       </CardHeader>
