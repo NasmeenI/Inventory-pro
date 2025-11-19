@@ -6,21 +6,18 @@ import { LoginForm } from "@/components/auth/login-form"
 import { RegisterForm } from "@/components/auth/register-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Package, Eye } from "lucide-react"
+import { Package } from "lucide-react"
 import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-export default function HomePage() {
+export default function LoginPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.push("/dashboard")
-      } else {
-        router.push("/products")
-      }
+    if (!isLoading && user) {
+      router.push("/dashboard")
     }
   }, [user, isLoading, router])
 
@@ -35,9 +32,8 @@ export default function HomePage() {
     )
   }
 
-  return null
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -45,13 +41,22 @@ export default function HomePage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
+        <div className="mb-4">
+          <Link href="/products">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Button>
+          </Link>
+        </div>
+
         <div className="text-center mb-8 space-y-3">
           <div className="flex items-center justify-center mb-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/50">
+            <div className="p-3 bg-linear-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/50">
               <Package className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-900 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-100 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-slate-900 via-blue-800 to-indigo-900 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-100 bg-clip-text text-transparent">
             InventoryPro
           </h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
@@ -97,15 +102,6 @@ export default function HomePage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        <div className="mt-6">
-          <Link href="/products" className="block">
-            <Button variant="outline" className="w-full" size="lg">
-              <Eye className="mr-2 h-4 w-4" />
-              Browse Products Catalog
-            </Button>
-          </Link>
-        </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           By continuing, you agree to our Terms of Service and Privacy Policy

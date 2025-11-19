@@ -133,31 +133,35 @@ export function ProductsTable({ products, onEditProduct, onRefresh, isLoading }:
                     <Badge variant={stockStatus.variant}>{stockStatus.label}</Badge>
                   </TableCell>
                   <TableCell>
-                    {user?.role === "admin" ? (
-                      <div className="flex items-center gap-2">
+                    {user ? (
+                      user.role === "admin" ? (
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setQrProduct(product)}>
+                            <QrCode className="mr-2 h-4 w-4" />
+                            QR
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => onEditProduct(product)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(product._id)}
+                            disabled={deletingId === product._id}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
+                      ) : (
                         <Button variant="outline" size="sm" onClick={() => setQrProduct(product)}>
                           <QrCode className="mr-2 h-4 w-4" />
-                          QR
+                          QR Code
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => onEditProduct(product)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(product._id)}
-                          disabled={deletingId === product._id}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </Button>
-                      </div>
+                      )
                     ) : (
-                      <Button variant="outline" size="sm" onClick={() => setQrProduct(product)}>
-                        <QrCode className="mr-2 h-4 w-4" />
-                        QR Code
-                      </Button>
+                      <span className="text-sm text-muted-foreground">View only</span>
                     )}
                   </TableCell>
                 </TableRow>

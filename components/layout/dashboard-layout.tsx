@@ -19,7 +19,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push("/")
+      router.push("/products")
     }
   }, [user, isLoading, router])
 
